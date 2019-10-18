@@ -1,0 +1,25 @@
+#!/bin/bash
+
+PORT="1099"
+JMETER_CFG="$HOME/.config/jmeter"
+JMETER_BIN="/jmeter/bin"
+JMETER_LIB="/jmeter/extra_libs"
+PROM_JAR="jmeter-prometheus-plugin-0.5.2-SNAPSHOT.jar"
+PROM_JAR_FULL="$HOME/workspace/jmeter-prometheus-plugin/target/$PROM_JAR"
+
+HOST_LOGS="$HOME/containers/jmeter"
+
+#ARGS=(-Dcom.sun.management.jmxremote)
+#ARGS+=(-Dcom.sun.management.jmxremote.local.only=false)
+ARGS+=(-Dcom.sun.management.jmxremote.authenticate=false)
+ARGS+=(-Dcom.sun.management.jmxremote.port="$PORT")
+ARGS+=(-Dcom.sun.management.jmxremote.rmi.port="$PORT") 
+ARGS+=(-Djava.rmi.server.hostname=0.0.0.0)
+ARGS+=(-Dcom.sun.management.jmxremote.ssl=false)
+
+
+CT_ARGS=(--rm -p "$PORT:$PORT" --name jmeter-server)
+CT_ARGS+=(-v "$JMETER_CFG/jmeter-server.properties:$JMETER_BIN/user.properties")
+CT_ARGS+=(-v $PROM_JAR_FULL:$JMETER_LIB/$PROM_JAR)
+
+podman run ${CT_ARGS[@]} jmeter /jmeter/bin/jmeter-server ${ARGS[@]} > "$HOST_LOGS/jmeter-server.out" 2>&1 &

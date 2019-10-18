@@ -1,0 +1,25 @@
+#!/bin/bash
+
+JMETER_CFG="$HOME/.config/jmeter"
+HOST_LOG="$HOME/containers/jmeter/logs"
+ENV_FILE="$JMETER_CFG/jmeter.env"
+JMETER_BIN="/jmeter/bin"
+JMETER_LIB="/jmeter/extra_libs"
+JMETER_LOG="/jmeter/logs"
+PROM_JAR="jmeter-prometheus-plugin-0.5.2-SNAPSHOT.jar"
+PROM_JAR_FULL="$HOME/workspace/jmeter-prometheus-plugin/target/$PROM_JAR"
+
+
+CT_ARGS=(--rm --name jmeter --network host --userns=keep-id)
+CT_ARGS+=(-e DISPLAY="$DISPLAY")
+CT_ARGS+=(-e DISPLAY=:0)
+#CT_ARGS+=(--log-level=debug)
+
+# mounts
+CT_ARGS+=(-v "$JMETER_CFG/jmeter.properties:$JMETER_BIN/user.properties")
+CT_ARGS+=(-v $PROM_JAR_FULL:$JMETER_LIB/$PROM_JAR)
+CT_ARGS+=(-v /tmp/.X11-unix:/tmp/.X11-unix)
+CT_ARGS+=(-v $HOST_LOG:$JMETER_LOG -v $JMETER_CFG/log4j2.xml:$JMETER_BIN/log4j2.xml:ro)
+
+#podman run ${CT_ARGS[@]} jmeter "$JMETER_BIN/jmeter"
+podman run ${CT_ARGS[@]} jmeter $@
